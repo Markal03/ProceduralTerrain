@@ -1,0 +1,2 @@
+C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\Bin\Desktop_2015\x64\Debug\DirectXTKSimpleSample_2015.exe
+C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\Bin\Desktop_2015\x64\Debug\DirectXTKSimpleSample_2015.pdb

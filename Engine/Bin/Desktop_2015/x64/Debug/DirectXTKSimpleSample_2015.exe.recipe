@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\Bin\Desktop_2015\x64\Debug\DirectXTKSimpleSample_2015.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\colour_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\colour_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\light_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\light_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\reflection_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\reflection_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\skydome_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\skydome_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\terrain_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\terrain_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\water_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\water_vs.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>
