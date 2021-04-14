@@ -73,10 +73,13 @@ void Game::Initialize(HWND window, int width, int height)
 	m_Light.setPosition(2.0f, 10.0f, 1.0f);
 	m_Light.setDirection(-1.0f, -1.0f, 0.0f);
 
+    m_Position.SetPosition(0.f, 1.f, 0.f);
+    m_Position.SetRotation(0.f, 0.f, 0.0f);
 	//setup camera
-	m_Camera01.setPosition(Vector3(0.0f, 1.5f, 4.0f));
-	m_Camera01.setRotation(Vector3(0.0f, -180.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
-
+	//m_Camera01.setPosition(Vector3(0.0f,-10.f, 0.f));
+	m_Camera01.setRotation(Vector3(0.f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
+    m_Camera01.setPosition(Vector3(0.f, 0.3, -5.f));
+    //m_Camera01->SetRotation(19.6834f, 222.013f, 0.0f);
 	
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
@@ -137,80 +140,8 @@ void Game::Update(DX::StepTimer const& timer)
 {	
 	//this is hacky,  i dont like this here.  
 	auto device = m_deviceResources->GetD3DDevice();
+    HandleMovementInput(10.f);
 
-    if (m_gameInputCommands.left)
-    {
-
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position -= m_Camera01.getRight() * m_Camera01.getMoveSpeed(); //add the forward vector
-        m_Camera01.setPosition(position);
-    }
-    if (m_gameInputCommands.right)
-    {
-
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position += m_Camera01.getRight() * m_Camera01.getMoveSpeed(); //add the forward vector
-        m_Camera01.setPosition(position);
-    }
-    if (m_gameInputCommands.forward)
-    {
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position += (m_Camera01.getForward() * m_Camera01.getMoveSpeed()); //add the forward vector
-        m_Camera01.setPosition(position);
-
-    }
-    if (m_gameInputCommands.back)
-    {
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position -= (m_Camera01.getForward() * m_Camera01.getMoveSpeed()); //add the forward vector
-        m_Camera01.setPosition(position);
-    }
-
-    if (m_gameInputCommands.rotDown) {
-        Vector3 rotation = m_Camera01.getRotation();
-        if (rotation.x > -160 && rotation.x < -17)
-            rotation.x -= m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.rotUp) {
-        Vector3 rotation = m_Camera01.getRotation();
-        if (rotation.x > -163 && rotation.x < -20)
-            rotation.x += m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.rotRight) {
-        Vector3 rotation = m_Camera01.getRotation();
-        rotation.y = rotation.y -= m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.rotLeft) {
-        Vector3 rotation = m_Camera01.getRotation();
-        rotation.y = rotation.y += m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.up)
-    {
-        Vector3 position = m_Camera01.getPosition();
-        position -= m_Camera01.getUp() * m_Camera01.getMoveSpeed();
-        m_Camera01.setPosition(position);
-    }
-
-    if (m_gameInputCommands.down)
-    {
-        Vector3 position = m_Camera01.getPosition();
-        position += m_Camera01.getUp() * m_Camera01.getMoveSpeed();
-        m_Camera01.setPosition(position);
-    }
-
-    if (m_gameInputCommands.reset)
-    {
-        m_Camera01.setPosition(Vector3(0.0f, 0.0f, 20.0f));
-        m_Camera01.setRotation(Vector3(-90.0f, 0.0f, 0.0f));
-    }
 
 	if (m_gameInputCommands.generate)
 	{
@@ -221,7 +152,7 @@ void Game::Update(DX::StepTimer const& timer)
     {
         m_Terrain.Smooth(device);
     }
-	m_Camera01.Update();	//camera update.
+	//m_Camera01.Update();	//camera update.
 	m_Terrain.Update();		//terrain update.  doesnt do anything at the moment. 
    // m_Terrain.RayTriangleIntersect(m_Camera01.getPosition(), Vector3(0,-1,0), )
 	m_view = m_Camera01.getCameraMatrix();
@@ -293,9 +224,10 @@ void Game::Render()
 	//Set Rendering states. 
 	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
-	context->RSSetState(m_states->CullClockwise());
-	//context->RSSetState(m_states->Wireframe
-
+	//context->RSSetState(m_states->CullClockwise());
+    context->RSSetState(m_states->CullNone());
+    //context->RSSetState(m_states->Wireframe
+    m_Camera01.Update();
 	//prepare transform for floor object. 
 	m_world = Matrix::Identity; //set world back to identity
 	//Matrix newPosition3 = Matrix::CreateTranslation(0.0f, -0.6f, 0.0f);
@@ -318,6 +250,8 @@ void Game::Render()
     m_world = m_world * skyscale * newPosition4 ;
     m_SkyDomeShader.EnableShader(context);
     m_SkyDomeShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, XMFLOAT4(0.0f, 0.3f, 0.8f, 1.0f), XMFLOAT4(0.2f, 0.6f, 0.8f, 1.0f));
+    //m_TerrainShader.EnableShader(context);
+    //m_TerrainShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_grassTexture.Get(), m_slopeTexture.Get(), m_rockTexture.Get());
     m_SkyDome.Render(context);
     context->OMSetDepthStencilState(0, 1);
 
@@ -480,6 +414,50 @@ void Game::CreateDeviceDependentResources()
 	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
     m_RefractionTexture = new RenderTexture(device, 1920, 1080, 1, 2);
     m_ReflectionTexture = new RenderTexture(device, 1920, 1080, 1, 2);
+}
+
+bool Game::HandleMovementInput(float frameTime)
+{
+    bool keyDown, result;
+    float posX, posY, posZ, rotX, rotY, rotZ;
+
+
+    // Set the frame time for calculating the updated position.
+    m_Position.SetFrameTime(frameTime);
+
+    // Handle the input.
+    keyDown = m_gameInputCommands.left;
+    m_Position.TurnLeft(keyDown);
+
+    keyDown = m_gameInputCommands.right;
+    m_Position.TurnRight(keyDown);
+
+    keyDown = m_gameInputCommands.forward;
+    m_Position.MoveForward(keyDown);
+
+    keyDown = m_gameInputCommands.back;
+    m_Position.MoveBackward(keyDown);
+
+    keyDown = m_gameInputCommands.up;
+    m_Position.MoveUpward(keyDown);
+
+    keyDown = m_gameInputCommands.down;
+    m_Position.MoveDownward(keyDown);
+
+    keyDown = m_gameInputCommands.rotUp;
+    m_Position.LookUpward(keyDown);
+
+    keyDown = m_gameInputCommands.rotDown;
+    m_Position.LookDownward(keyDown);
+
+    // Get the view point position/rotation.
+    m_Position.GetPosition(posX, posY, posZ);
+    m_Position.GetRotation(rotX, rotY, rotZ);
+
+    // Set the position of the camera.
+    m_Camera01.setPosition(Vector3(posX, posY, posZ));
+    m_Camera01.setRotation(Vector3(rotX, rotY, rotZ));
+    return true;
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

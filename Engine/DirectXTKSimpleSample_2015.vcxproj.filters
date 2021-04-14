@@ -86,6 +86,7 @@
     <ClInclude Include="Water.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Position.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -149,6 +150,7 @@
     <ClCompile Include="Water.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Position.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

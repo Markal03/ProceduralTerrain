@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Camera.h"
+
 using namespace DirectX::SimpleMath;
 //camera for our app simple directX application. While it performs some basic functionality its incomplete. 
 //
@@ -8,7 +9,7 @@ Camera::Camera()
 {
 	//initalise values. 
 	//Orientation and Position are how we control the camera. 
-	m_orientation.x = -130.0f;		//rotation around x - pitch
+	m_orientation.x = 0.0f;		//rotation around x - pitch
 	m_orientation.y = 0.0f;		//rotation around y - yaw
 	m_orientation.z = 0.0f;		//rotation around z - roll	//we tend to not use roll a lot in first person
 
@@ -18,24 +19,24 @@ Camera::Camera()
 
 	//These variables are used for internal calculations and not set.  but we may want to queary what they 
 	//externally at points
-	m_lookat.x = 0.0f;		//Look target point
-	m_lookat.y = 0.0f;
-	m_lookat.z = 0.0f;
+	//m_lookat.x = 0.0f;		//Look target point
+	//m_lookat.y = 0.0f;
+	//m_lookat.z = 0.0f;
 
-	m_forward.x = 0.0f;		//forward/look direction
-	m_forward.y = 0.0f;
-	m_forward.z = 0.0f;
+	//m_forward.x = 0.0f;		//forward/look direction
+	//m_forward.y = 0.0f;
+	//m_forward.z = 0.0f;
 
-	m_right.x = 0.0f;
-	m_right.y = 0.0f;
-	m_right.z = 0.0f;
-	
+	//m_right.x = 0.0f;
+	//m_right.y = 0.0f;
+	//m_right.z = 0.0f;
 	//
-	m_movespeed = 0.30;
-	m_camRotRate = 3.0;
+	////
+	//m_movespeed = 0.30;
+	//m_camRotRate = 3.0;
 
 	//force update with initial values to generate other camera data correctly for first update. 
-	Update();
+	//Update();
 }
 
 
@@ -46,46 +47,95 @@ Camera::~Camera()
 
 void Camera::Update()
 {
-	//rotation in yaw - using the paramateric equation of a circle
-	m_forward.x = sin((m_orientation.y)*3.1415f / 180.0f);
-	m_forward.z = cos((m_orientation.y)*3.1415f / 180.0f);
-	m_forward.Normalize();
 
-	//create right vector from look Direction
-	m_forward.Cross(Vector3::UnitY, m_right);
+	Vector3 up, position, lookAt;
+	float yaw, pitch, roll;
+	Matrix rotationMatrix;
 
-	//update lookat point
-	m_lookat = m_position + m_forward;
 
-	//apply camera vectors and create camera matrix
-	m_cameraMatrix = (Matrix::CreateLookAt(m_position, m_lookat, Vector3::UnitY));
+	// Setup the vector that points upwards.
+	up.x = 0.0f;
+	up.y = 1.0f;
+	up.z = 0.0f;
+
+	// Setup the position of the camera in the world.
+	position.x = m_position.x;
+	position.y = m_position.y;
+	position.z = m_position.z;
+
+	// Setup where the camera is looking by default.
+	lookAt.x = 0.0f;
+	lookAt.y = 0.0f;
+	lookAt.z = 1.0f;
+
+	// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
+	pitch = m_position.x * 0.0174532925f;
+	yaw = m_position.y * 0.0174532925f;
+	roll = m_position.z * 0.0174532925f;
+
+	// Create the rotation matrix from the yaw, pitch, and roll values.
+	rotationMatrix =  DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+
+	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.
+	
+	//D3DXVec3TransformCoord(&lookAt, &lookAt, &rotationMatrix);
+	//D3DXVec3TransformCoord(&up, &up, &rotationMatrix);
+	lookAt = DirectX::XMVector3TransformCoord(lookAt, rotationMatrix);
+	up = DirectX::XMVector3TransformCoord(up, rotationMatrix);
+	// Translate the rotated camera position to the location of the viewer.
+	lookAt = position + lookAt;
+
+	// Finally create the view matrix from the three updated vectors.
+	m_viewMatrix = DirectX::XMMatrixLookAtLH(position, lookAt, up);
 
 
 }
 
 void Camera::RenderReflection(float height)
 {
-	//rotation in yaw - using the paramateric equation of a circle
-	m_forward.x = sin((m_orientation.y) * 3.1415f / 180.0f);
-	m_forward.z = cos((m_orientation.y) * 3.1415f / 180.0f);
-	m_forward.Normalize();
+	Vector3 up, position, lookAt;
+	float yaw, pitch, roll;
+	Matrix rotationMatrix;
 
-	//create right vector from look Direction
-	m_forward.Cross(Vector3::UnitY, m_right);
 
-	//update lookat point
-	m_lookat = m_position + m_forward;
-	Vector3 position = m_position;
-	position.y = -position.y + (height * 2.0f);
-	//apply camera vectors and create camera matrix
-	m_reflectionViewMatrix = (Matrix::CreateLookAt(position, m_lookat, Vector3::UnitY));
-	//m_reflectionViewMatrix = DirectX::XMMatrixLookAtLH(position, m_lookat, Vector3::UnitY);
+	// Setup the vector that points upwards.
+	up.x = 0.0f;
+	up.y = 1.0f;
+	up.z = 0.0f;
+
+	// Setup the position of the camera in the world.
+	position.x = m_position.x;
+	position.y = -m_position.y + (height * 2.0f);
+	position.z = m_position.z;
+
+	// Setup where the camera is looking by default.
+	lookAt.x = 0.0f;
+	lookAt.y = 0.0f;
+	lookAt.z = 1.0f;
+
+	// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
+	pitch = m_position.x * 0.0174532925f; // 0.0174532925f = PI / 180
+	yaw = m_position.y * 0.0174532925f;
+	roll = m_position.z * 0.0174532925f;
+
+	// Create the rotation matrix from the yaw, pitch, and roll values.
+	rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+
+	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.
+
+	lookAt = DirectX::XMVector3TransformCoord(lookAt, rotationMatrix);
+	up = DirectX::XMVector3TransformCoord(up, rotationMatrix);
+	// Translate the rotated camera position to the location of the viewer.
+	lookAt = position + lookAt;
+
+	// Finally create the view matrix from the three updated vectors.
+	m_reflectionViewMatrix = DirectX::XMMatrixLookAtLH(position, lookAt, up);
 }
 
 
 Matrix Camera::getCameraMatrix()
 {
-	return m_cameraMatrix;
+	return m_viewMatrix;
 }
 
 Matrix Camera::GetReflectionViewMatrix()

@@ -54,11 +54,11 @@ void Input::Update()
 	else		m_GameInput.rotRight = false;
 
 	//W key
-	if (kb.Up)	m_GameInput.rotUp = true;
+	if (kb.PageUp)	m_GameInput.rotUp = true;
 	else		m_GameInput.rotUp = false;
 
 	//S key
-	if (kb.Down)	m_GameInput.rotDown = true;
+	if (kb.PageDown)	m_GameInput.rotDown = true;
 	else			m_GameInput.rotDown = false;
 
 	//Down arrow key

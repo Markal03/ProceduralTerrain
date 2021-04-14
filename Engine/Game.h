@@ -18,6 +18,7 @@
 #include "WaterShader.h"
 #include "ReflectionShader.h"
 #include "Water.h"
+#include "Position.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -69,6 +70,7 @@ private:
 	void SetupGUI();
     void RenderRefractionToTexture();
     void RenderReflectionToTexture();
+    bool HandleMovementInput(float frameTime);
     // Device resources.
     std::unique_ptr<DX::DeviceResources>    m_deviceResources;
 
@@ -96,7 +98,7 @@ private:
 
 	//Cameras
 	Camera																	m_Camera01;
-
+    Position                                                                m_Position;
 	//textures 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture1;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture2;
