@@ -33,7 +33,7 @@ void SkyDome::Render(ID3D11DeviceContext* deviceContext)
 {
 	// Render the sky dome.
 	RenderBuffers(deviceContext);
-
+	deviceContext->DrawIndexed(m_indexCount, 0, 0);
 	return;
 }
 
@@ -45,6 +45,11 @@ int SkyDome::GetIndexCount()
 XMFLOAT4 SkyDome::GetCenterColor()
 {
 	return m_centerColor;
+}
+
+XMFLOAT4 SkyDome::GetApexColor()
+{
+	return m_apexColor;
 }
 
 bool SkyDome::LoadSkyDomeModel(char* filename)
@@ -245,7 +250,7 @@ bool SkyDome::Initialize(ID3D11Device* device)
 
 
 	// Load in the sky dome model.
-	result = LoadSkyDomeModel("../Engine/data/skydome/skydome.txt");
+	result = LoadSkyDomeModel("skydome.txt");
 	if (!result)
 	{
 		return false;

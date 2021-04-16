@@ -829,7 +829,6 @@ float Terrain::Noise(int x)
 
 bool Terrain::Smooth(ID3D11Device* device)
 {
-
 	int index;
 
 	for (int j = 0; j < m_terrainHeight; j++)

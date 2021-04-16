@@ -18,6 +18,8 @@
 #include "WaterShader.h"
 #include "ReflectionShader.h"
 #include "Water.h"
+#include "Skyplane.h"
+#include "SkyplaneShader.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -104,6 +106,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_slopeTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_rockTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_waterTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_normalTexture;
 
 	//Shaders
 	Shader																	m_BasicShaderPair;
@@ -111,16 +114,17 @@ private:
     SkyDomeShader															m_SkyDomeShader;
     WaterShader															    m_WaterShader;
     ReflectionShader														m_ReflectionShader;
+    SkyplaneShader                                                          m_SkyplaneShader;
 
 	//Scene. 
 	Terrain																	m_Terrain;
     Water                                                                   m_Water;
-    //SkyDome*                                                              m_SkyDome;
+    SkyDome                                                                 m_SkyDome;
+    Skyplane                                                                m_Skyplane;
 	ModelClass																m_BasicModel;
 	ModelClass																m_BasicModel2;
 	ModelClass																m_BasicModel3;
 	ModelClass																m_BasicModel4;
-	ModelClass																m_SkyDome;
 
 
 
@@ -152,4 +156,7 @@ private:
     DirectX::SimpleMath::Matrix                                             m_world;
     DirectX::SimpleMath::Matrix                                             m_view;
     DirectX::SimpleMath::Matrix                                             m_projection;
+
+    D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+    D3D11_BLEND_DESC blendStateDescription;
 };

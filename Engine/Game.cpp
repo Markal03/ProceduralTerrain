@@ -75,7 +75,7 @@ void Game::Initialize(HWND window, int width, int height)
 
 	//setup camera
 	m_Camera01.setPosition(Vector3(0.0f, 1.5f, 4.0f));
-	m_Camera01.setRotation(Vector3(0.0f, -180.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
+	m_Camera01.setRotation(Vector3(180.0f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
 
 	
 #ifdef DXTK_AUDIO
@@ -229,6 +229,7 @@ void Game::Update(DX::StepTimer const& timer)
 
     
     m_Water.Frame();
+    m_Skyplane.Frame();
     RenderRefractionToTexture();
     RenderReflectionToTexture();
 	/*create our UI*/
@@ -288,59 +289,69 @@ void Game::Render()
     m_sprites->Begin();
 		m_font->DrawString(m_sprites.get(), L"Procedural Methods", XMFLOAT2(10, 10), Colors::Yellow);
     m_sprites->End();
-
-
-	//Set Rendering states. 
-	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
-	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
-	context->RSSetState(m_states->CullClockwise());
-	//context->RSSetState(m_states->Wireframe
-
-	//prepare transform for floor object. 
-	m_world = Matrix::Identity; //set world back to identity
-	//Matrix newPosition3 = Matrix::CreateTranslation(0.0f, -0.6f, 0.0f);
-	Matrix newScale = Matrix::CreateScale(0.1);		//scale the terrain down a little. 
-    m_world = m_world * newScale; //*newPosition3;
-
-	//setup and draw cube
-	m_TerrainShader.EnableShader(context);
-	m_TerrainShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_grassTexture.Get(), m_slopeTexture.Get(), m_rockTexture.Get());
-	m_Terrain.Render(context);
 	
 
     m_world = Matrix::Identity;
-    Matrix newPosition1 = Matrix::CreateTranslation(0.0f, 0.f, 0.0f);
 
     context->RSSetState(m_states->CullNone());
-    context->OMSetDepthStencilState(0, 1);
-    Matrix newPosition4 = Matrix::CreateTranslation(m_Camera01.getPosition());
-    Matrix skyscale = Matrix::CreateScale(5.f);
-    m_world = m_world * skyscale * newPosition4 ;
-    m_SkyDomeShader.EnableShader(context);
-    m_SkyDomeShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, XMFLOAT4(0.0f, 0.3f, 0.8f, 1.0f), XMFLOAT4(0.2f, 0.6f, 0.8f, 1.0f));
-    m_SkyDome.Render(context);
-    context->OMSetDepthStencilState(0, 1);
+    context->OMSetDepthStencilState(m_states->DepthNone(), 1);
 
+    Matrix cameraTranslation = Matrix::CreateTranslation(m_Camera01.getPosition());
+    //Matrix skyscale = Matrix::CreateScale(5.f);
+    m_world = m_world  * cameraTranslation;
+    m_SkyDomeShader.EnableShader(context);
+    m_SkyDomeShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, m_SkyDome.GetApexColor(), m_SkyDome.GetCenterColor());
+    m_SkyDome.Render(context);
+    
     context->RSSetState(m_states->CullClockwise());
 
+    float blendFactor[4];
+    // Turn on additive alpha blending to blend clouds with sky dome
+    blendFactor[0] = 0.0f;
+    blendFactor[1] = 0.0f;
+    blendFactor[2] = 0.0f;
+    blendFactor[3] = 0.0f;
+    context->OMSetBlendState(m_states->Additive(), blendFactor, 0xffffffff);
 
 
+    m_SkyplaneShader.EnableShader(context);
+    m_SkyplaneShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, m_Skyplane.GetCloudTexture(),
+        m_Skyplane.GetPerturbTexture(), m_Skyplane.GetTranslation(), m_Skyplane.GetScale(), m_Skyplane.GetBrightness());
+
+    m_Skyplane.Render(context);
+    
+    context->OMSetBlendState(m_states->Opaque(), blendFactor, 0xffffffff);
+    context->OMSetDepthStencilState(m_states->DepthDefault(), 1);
+
+    //TERRAIN//
+
+    //prepare transform for floor object. 
+    m_world = Matrix::Identity; //set world back to identity
+    //Matrix newPosition3 = Matrix::CreateTranslation(0.0f, -0.6f, 0.0f);
+    Matrix newScale = Matrix::CreateScale(0.1);		//scale the terrain down a little. 
+    m_world = m_world * newScale; //*newPosition3;
+
+    //setup and draw cube
+    m_TerrainShader.EnableShader(context);
+    m_TerrainShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_grassTexture.Get(), m_slopeTexture.Get(), m_rockTexture.Get());
+    m_Terrain.Render(context);
+
+
+
+    //WATER//
 
     m_world = Matrix::Identity;
     
     Matrix waterTranslation = Matrix::CreateTranslation(6.4f, m_Water.GetWaterHeight(), 6.4f);
 
     m_world = m_world * waterTranslation;
-    auto potato = m_RefractionTexture->getShaderResourceView();
-    auto potato2 = m_ReflectionTexture->getShaderResourceView();
     m_WaterShader.EnableShader(context);
     m_Camera01.RenderReflection(m_Water.GetWaterHeight());
     m_WaterShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Camera01.GetReflectionViewMatrix(),
-        potato, potato2, m_waterTexture.Get(), m_Camera01.getPosition(), m_Water.GetNormalMapTiling(), m_Water.GetWaterTranslation(),
+        m_RefractionTexture->getShaderResourceView(), m_ReflectionTexture->getShaderResourceView(), m_Water.GetTexture(), m_Camera01.getPosition(), m_Water.GetNormalMapTiling(), m_Water.GetWaterTranslation(),
         m_Water.GetReflectRefractScale(), m_Water.GetRefractionTint(), &m_Light, m_Water.GetSpecularShininess());
 
-    //m_TerrainShader.EnableShader(context);
-    //m_TerrainShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, potato2, potato2, potato2);
+
     m_Water.Render(context);
 
     m_world = Matrix::Identity;
@@ -456,7 +467,8 @@ void Game::CreateDeviceDependentResources()
     m_Water.Initialize(device, L"waternormal.dds", 0.1f, 6.3f);
     //m_SkyDome->Initialize(device);
 	//setup our test model
-    m_SkyDome.InitializeSphere(device, 30);
+    m_SkyDome.Initialize(device);
+    m_Skyplane.Initialize(device, L"cloud001.dds", L"perturb001.dds");
 	m_BasicModel.InitializeSphere(device, 1);
 	m_BasicModel2.InitializeModel(device,"drone.obj");
 	m_BasicModel3.InitializeBox(device, 10.0f, 10.f, 3.0f);	//box includes dimensions
@@ -468,6 +480,7 @@ void Game::CreateDeviceDependentResources()
 	m_SkyDomeShader.InitStandard(device, L"skydome_vs.cso", L"skydome_ps.cso");
     m_ReflectionShader.InitStandard(device, L"reflection_vs.cso", L"reflection_ps.cso");
     m_WaterShader.InitStandard(device, L"water_vs.cso", L"water_ps.cso");
+    m_SkyplaneShader.InitStandard(device, L"skyplane_vs.cso", L"skyplane_ps.cso");
 	//load Textures
 	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"EvilDrone_Diff.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
@@ -475,7 +488,7 @@ void Game::CreateDeviceDependentResources()
 	CreateDDSTextureFromFile(device, L"slope.dds", nullptr,	m_slopeTexture.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"rock.dds", nullptr,	m_rockTexture.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"waternormal.dds", nullptr,	m_waterTexture.ReleaseAndGetAddressOf());
-
+    CreateDDSTextureFromFile(device, L"normal.dds", nullptr, m_normalTexture.ReleaseAndGetAddressOf());
 	//Initialise Render to texture
 	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
     m_RefractionTexture = new RenderTexture(device, 1920, 1080, 1, 2);
@@ -611,46 +624,48 @@ void Game::RenderReflectionToTexture()
     worldMatrix = worldMatrix * translation;
     // Turn off back face culling and the Z buffer.
     context->RSSetState(m_states->CullNone());
-    context->OMSetDepthStencilState(0, 1);
-    //m_Direct3D->TurnOffCulling();
-    //m_Direct3D->TurnZBufferOff();
+    context->OMSetDepthStencilState(m_states->DepthNone(), 1);
+
 
     // Render the sky dome using the reflection view matrix.
     m_SkyDomeShader.EnableShader(context);
-    m_SkyDomeShader.SetShaderParameters(context, &worldMatrix, &reflectionViewMatrix, &m_projection, XMFLOAT4(0.2f, 0.6f, 0.9f, 1.0f), XMFLOAT4(0.2f, 0.6f, 0.9f, 1.0f));
+    m_SkyDomeShader.SetShaderParameters(context, &worldMatrix, &reflectionViewMatrix, &m_projection, m_SkyDome.GetApexColor(), m_SkyDome.GetCenterColor());
     m_SkyDome.Render(context);
+
+
     // Enable back face culling.
-    //m_Direct3D->TurnOnCulling();
     context->RSSetState(m_states->CullClockwise());
-    // Enable additive blending so the clouds blend with the sky dome color.
-   // m_Direct3D->EnableSecondBlendState();
+
+    float blendFactor[4];
+    // Turn on additive alpha blending to blend clouds with sky dome
+    blendFactor[0] = 0.0f;
+    blendFactor[1] = 0.0f;
+    blendFactor[2] = 0.0f;
+    blendFactor[3] = 0.0f;
+    context->OMSetBlendState(m_states->Additive(), blendFactor, 0xffffffff);
 
     // Render the sky plane using the sky plane shader.
-    //m_SkyPlane->Render(m_Direct3D->GetDeviceContext());
-    //m_SkyPlaneShader->Render(m_Direct3D->GetDeviceContext(), m_SkyPlane->GetIndexCount(), worldMatrix, reflectionViewMatrix, projectionMatrix,
-        //m_SkyPlane->GetCloudTexture(), m_SkyPlane->GetPerturbTexture(), m_SkyPlane->GetTranslation(), m_SkyPlane->GetScale(),
-        //m_SkyPlane->GetBrightness());
+    m_SkyplaneShader.EnableShader(context);
+    m_SkyplaneShader.SetShaderParameters(context, &worldMatrix, &reflectionViewMatrix, &m_projection, m_Skyplane.GetCloudTexture(), 
+        m_Skyplane.GetPerturbTexture(), m_Skyplane.GetTranslation(), m_Skyplane.GetScale(), m_Skyplane.GetBrightness());
+
+        m_Skyplane.Render(context);
 
     // Turn off blending and enable the Z buffer again.
     //m_Direct3D->TurnOffAlphaBlending();
-    context->OMSetDepthStencilState(0, 1);
+    context->OMSetBlendState(m_states->Opaque(), blendFactor, 0xffffffff);
+    context->OMSetDepthStencilState(m_states->DepthDefault(), 1);
 
     // Reset the world matrix.
     //m_Direct3D->GetWorldMatrix(worldMatrix);
     worldMatrix = Matrix::Identity;
+    Matrix newScale = Matrix::CreateScale(0.1);
+    worldMatrix = worldMatrix * newScale;
     // Render the terrain using the reflection view matrix and reflection clip plane.
     m_ReflectionShader.EnableShader(context);
     m_ReflectionShader.SetShaderParameters(context, &worldMatrix, &reflectionViewMatrix, &m_projection, &m_Light, m_grassTexture.Get(), m_rockTexture.Get(), clipPlane, 2.0f);
-    
-        //m_TerrainShader.EnableShader(context);
-    //m_TerrainShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_grassTexture.Get(), m_slopeTexture.Get(), m_rockTexture.Get());
-
     m_Terrain.Render(context);
-    //m_ReflectionShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, reflectionViewMatrix, projectionMatrix,
-        //m_Terrain->GetColorTexture(), m_Terrain->GetNormalTexture(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), 2.0f,
-        //clipPlane);
 
-    //Clear();
     context->OMSetRenderTargets(1, &renderTargetView, depthTargetView);
     context->RSSetViewports(1, &m_deviceResources->GetScreenViewport());
     return;

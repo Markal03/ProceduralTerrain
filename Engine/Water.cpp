@@ -91,7 +91,7 @@ int Water::GetIndexCount()
 
 ID3D11ShaderResourceView* Water::GetTexture()
 {
-	return m_Texture->getShaderResourceView();
+	return m_Texture->GetTexture();
 }
 
 
@@ -285,19 +285,19 @@ bool Water::LoadTexture(ID3D11Device * device, WCHAR * filename)
 	bool result;
 
 
-	//// Create the texture object.
-	//m_Texture = new RenderTexture;
-	//if (!m_Texture)
-	//{
-	//	return false;
-	//}
+	// Create the texture object.
+	m_Texture = new Texture;
+	if (!m_Texture)
+	{
+		return false;
+	}
 
-	//// Initialize the texture object.
-	//result = m_Texture->Initialize(device, filename);
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// Initialize the texture object.
+	result = m_Texture->Initialize(device, filename);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -308,7 +308,7 @@ void Water::ReleaseTexture()
 	// Release the texture object.
 	if (m_Texture)
 	{
-		//m_Texture->Shutdown();
+		m_Texture->Shutdown();
 		delete m_Texture;
 		m_Texture = 0;
 	}

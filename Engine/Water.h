@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderTexture.h"
+#include "Texture.h"
 class Water
 {
 private:
@@ -41,7 +42,7 @@ private:
 	float m_waterHeight;
 	ID3D11Buffer* m_vertexBuffer, * m_indexBuffer;
 	int m_vertexCount, m_indexCount;
-	RenderTexture* m_Texture;
+	Texture* m_Texture;
 	DirectX::SimpleMath::Vector2 m_normalMapTiling;
 	float m_waterTranslation;
 	float m_reflectRefractScale;

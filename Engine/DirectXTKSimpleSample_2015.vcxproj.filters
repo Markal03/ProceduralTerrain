@@ -86,6 +86,13 @@
     <ClInclude Include="Water.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="SkyplaneShader.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Skyplane.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -149,6 +156,13 @@
     <ClCompile Include="Water.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="SkyplaneShader.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Skyplane.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
@@ -204,6 +218,12 @@
       <Filter>Assets</Filter>
     </FxCompile>
     <FxCompile Include="water_vs.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="skyplane_ps.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="skyplane_vs.hlsl">
       <Filter>Assets</Filter>
     </FxCompile>
   </ItemGroup>
