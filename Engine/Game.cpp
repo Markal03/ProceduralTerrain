@@ -62,10 +62,10 @@ void Game::Initialize(HWND window, int width, int height)
 	m_fullscreenRect.right = 1920;
 	m_fullscreenRect.bottom = 1080;
 
-	m_CameraViewRect.left = 500;
+	m_CameraViewRect.left = 0;
 	m_CameraViewRect.top = 0;
-	m_CameraViewRect.right = 800;
-	m_CameraViewRect.bottom = 240;
+	m_CameraViewRect.right = 1920;
+	m_CameraViewRect.bottom = 1080;
 
 	//setup light
 	m_Light.setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
@@ -73,15 +73,21 @@ void Game::Initialize(HWND window, int width, int height)
 	m_Light.setPosition(2.0f, 10.0f, 1.0f);
 	m_Light.setDirection(-1.0f, -1.0f, 0.0f);
 
-    m_Position.SetPosition(0.f, 1.f, 0.f);
-    m_Position.SetRotation(0.f, 0.f, 0.0f);
+
+    m_Position.SetPosition(5.f, 5.f, 0.f);
+    m_Position.SetRotation(19.6834f, 222.013f, 0.0f);
+
+    m_Camera01.setPosition(Vector3(0.f, 0.5f, -10.f));
+
+
+
+
 
 	//setup camera
 	// m_Camera01.setPosition(Vector3(0.0f, 1.5f, 4.0f));
 	// m_Camera01.setRotation(Vector3(180.0f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up.
 
-    	m_Camera01.setRotation(Vector3(0.f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up.
-    m_Camera01.setPosition(Vector3(0.f, 0.3, -10.f));
+
 
 
 #ifdef DXTK_AUDIO
@@ -144,7 +150,7 @@ void Game::Update(DX::StepTimer const& timer)
 	//this is hacky,  i dont like this here.
 	auto device = m_deviceResources->GetD3DDevice();
 
-    HandleMovementInput(timer.GetFrameCount());
+    HandleMovementInput(10.f);
 
 	if (m_gameInputCommands.generate)
 	{
@@ -238,7 +244,7 @@ void Game::Render()
     m_SkyDomeShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, m_SkyDome.GetApexColor(), m_SkyDome.GetCenterColor());
     m_SkyDome.Render(context);
 
-    context->RSSetState(m_states->CullClockwise());
+    context->RSSetState(m_states->CullCounterClockwise());
 
     float blendFactor[4];
     // Turn on additive alpha blending to blend clouds with sky dome
@@ -614,7 +620,7 @@ void Game::RenderReflectionToTexture()
 
 
     // Enable back face culling.
-    context->RSSetState(m_states->CullClockwise());
+    context->RSSetState(m_states->CullCounterClockwise());
 
     float blendFactor[4];
     // Turn on additive alpha blending to blend clouds with sky dome

@@ -1,6 +1,3 @@
 ﻿  Game.cpp
-C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\Game.cpp(147,44): warning C4244: 'argument': conversion from 'uint32_t' to 'float', possible loss of data
-C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\Game.cpp(329,19): warning C4101: 'result': unreferenced local variable
-  Input.cpp
-  Generating Code...
+C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\Game.cpp(335,19): warning C4101: 'result': unreferenced local variable
   DirectXTKSimpleSample_2015.vcxproj -> C:\Users\Marco\Desktop\Abertay University\CMP-505\tertut01\Engine\Bin\Desktop_2015\x64\Debug\DirectXTKSimpleSample_2015.exe
