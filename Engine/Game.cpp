@@ -73,11 +73,17 @@ void Game::Initialize(HWND window, int width, int height)
 	m_Light.setPosition(2.0f, 10.0f, 1.0f);
 	m_Light.setDirection(-1.0f, -1.0f, 0.0f);
 
-	//setup camera
-	m_Camera01.setPosition(Vector3(0.0f, 1.5f, 4.0f));
-	m_Camera01.setRotation(Vector3(180.0f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
+    m_Position.SetPosition(0.f, 1.f, 0.f);
+    m_Position.SetRotation(0.f, 0.f, 0.0f);
 
-	
+	//setup camera
+	// m_Camera01.setPosition(Vector3(0.0f, 1.5f, 4.0f));
+	// m_Camera01.setRotation(Vector3(180.0f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up.
+
+    	m_Camera01.setRotation(Vector3(0.f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up.
+    m_Camera01.setPosition(Vector3(0.f, 0.3, -10.f));
+
+
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
     AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
@@ -109,14 +115,14 @@ void Game::Tick()
 	//take in input
 	m_input.Update();								//update the hardware
 	m_gameInputCommands = m_input.getGameInput();	//retrieve the input for our game
-	
+
 	//Update all game objects
     m_timer.Tick([&]()
     {
         Update(m_timer);
     });
 
-	//Render all game content. 
+	//Render all game content.
     Render();
 
 #ifdef DXTK_AUDIO
@@ -129,88 +135,16 @@ void Game::Tick()
     }
 #endif
 
-	
+
 }
 
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
-{	
-	//this is hacky,  i dont like this here.  
+{
+	//this is hacky,  i dont like this here.
 	auto device = m_deviceResources->GetD3DDevice();
 
-    if (m_gameInputCommands.left)
-    {
-
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position -= m_Camera01.getRight() * m_Camera01.getMoveSpeed(); //add the forward vector
-        m_Camera01.setPosition(position);
-    }
-    if (m_gameInputCommands.right)
-    {
-
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position += m_Camera01.getRight() * m_Camera01.getMoveSpeed(); //add the forward vector
-        m_Camera01.setPosition(position);
-    }
-    if (m_gameInputCommands.forward)
-    {
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position += (m_Camera01.getForward() * m_Camera01.getMoveSpeed()); //add the forward vector
-        m_Camera01.setPosition(position);
-
-    }
-    if (m_gameInputCommands.back)
-    {
-        Vector3 position = m_Camera01.getPosition(); //get the position
-        position -= (m_Camera01.getForward() * m_Camera01.getMoveSpeed()); //add the forward vector
-        m_Camera01.setPosition(position);
-    }
-
-    if (m_gameInputCommands.rotDown) {
-        Vector3 rotation = m_Camera01.getRotation();
-        if (rotation.x > -160 && rotation.x < -17)
-            rotation.x -= m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.rotUp) {
-        Vector3 rotation = m_Camera01.getRotation();
-        if (rotation.x > -163 && rotation.x < -20)
-            rotation.x += m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.rotRight) {
-        Vector3 rotation = m_Camera01.getRotation();
-        rotation.y = rotation.y -= m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.rotLeft) {
-        Vector3 rotation = m_Camera01.getRotation();
-        rotation.y = rotation.y += m_Camera01.getRotationSpeed();
-        m_Camera01.setRotation(rotation);
-    }
-
-    if (m_gameInputCommands.up)
-    {
-        Vector3 position = m_Camera01.getPosition();
-        position -= m_Camera01.getUp() * m_Camera01.getMoveSpeed();
-        m_Camera01.setPosition(position);
-    }
-
-    if (m_gameInputCommands.down)
-    {
-        Vector3 position = m_Camera01.getPosition();
-        position += m_Camera01.getUp() * m_Camera01.getMoveSpeed();
-        m_Camera01.setPosition(position);
-    }
-
-    if (m_gameInputCommands.reset)
-    {
-        m_Camera01.setPosition(Vector3(0.0f, 0.0f, 20.0f));
-        m_Camera01.setRotation(Vector3(-90.0f, 0.0f, 0.0f));
-    }
+    HandleMovementInput(timer.GetFrameCount());
 
 	if (m_gameInputCommands.generate)
 	{
@@ -222,14 +156,15 @@ void Game::Update(DX::StepTimer const& timer)
         m_Terrain.Smooth(device);
     }
 	m_Camera01.Update();	//camera update.
-	m_Terrain.Update();		//terrain update.  doesnt do anything at the moment. 
-   // m_Terrain.RayTriangleIntersect(m_Camera01.getPosition(), Vector3(0,-1,0), )
-	m_view = m_Camera01.getCameraMatrix();
-	m_world = Matrix::Identity;
+    m_view = m_Camera01.getCameraMatrix();
+    m_world = Matrix::Identity;
 
-    
+
+	m_Terrain.Update();		//terrain update.  doesnt do anything at the moment.
+
     m_Water.Frame();
     m_Skyplane.Frame();
+
     RenderRefractionToTexture();
     RenderReflectionToTexture();
 	/*create our UI*/
@@ -260,7 +195,7 @@ void Game::Update(DX::StepTimer const& timer)
     }
 #endif
 
-  
+
 	if (m_input.Quit())
 	{
 		ExitGame();
@@ -271,7 +206,7 @@ void Game::Update(DX::StepTimer const& timer)
 #pragma region Frame Render
 // Draws the scene.
 void Game::Render()
-{	
+{
     // Don't try to render anything before the first Update.
     if (m_timer.GetFrameCount() == 0)
     {
@@ -289,7 +224,7 @@ void Game::Render()
     m_sprites->Begin();
 		m_font->DrawString(m_sprites.get(), L"Procedural Methods", XMFLOAT2(10, 10), Colors::Yellow);
     m_sprites->End();
-	
+
 
     m_world = Matrix::Identity;
 
@@ -302,7 +237,7 @@ void Game::Render()
     m_SkyDomeShader.EnableShader(context);
     m_SkyDomeShader.SetShaderParameters(context, &m_world, &m_view, &m_projection, m_SkyDome.GetApexColor(), m_SkyDome.GetCenterColor());
     m_SkyDome.Render(context);
-    
+
     context->RSSetState(m_states->CullClockwise());
 
     float blendFactor[4];
@@ -319,16 +254,16 @@ void Game::Render()
         m_Skyplane.GetPerturbTexture(), m_Skyplane.GetTranslation(), m_Skyplane.GetScale(), m_Skyplane.GetBrightness());
 
     m_Skyplane.Render(context);
-    
+
     context->OMSetBlendState(m_states->Opaque(), blendFactor, 0xffffffff);
     context->OMSetDepthStencilState(m_states->DepthDefault(), 1);
 
     //TERRAIN//
 
-    //prepare transform for floor object. 
+    //prepare transform for floor object.
     m_world = Matrix::Identity; //set world back to identity
     //Matrix newPosition3 = Matrix::CreateTranslation(0.0f, -0.6f, 0.0f);
-    Matrix newScale = Matrix::CreateScale(0.1);		//scale the terrain down a little. 
+    Matrix newScale = Matrix::CreateScale(0.1);		//scale the terrain down a little.
     m_world = m_world * newScale; //*newPosition3;
 
     //setup and draw cube
@@ -341,7 +276,7 @@ void Game::Render()
     //WATER//
 
     m_world = Matrix::Identity;
-    
+
     Matrix waterTranslation = Matrix::CreateTranslation(6.4f, m_Water.GetWaterHeight(), 6.4f);
 
     m_world = m_world * waterTranslation;
@@ -359,7 +294,7 @@ void Game::Render()
     //render our GUI
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-	
+
 
     // Show the new frame.
     m_deviceResources->Present();
@@ -388,6 +323,50 @@ void Game::Clear()
 }
 
 #pragma endregion
+
+bool Game::HandleMovementInput(float frameTime)
+{
+    bool keyDown, result;
+    float posX, posY, posZ, rotX, rotY, rotZ;
+
+
+    // Set the frame time for calculating the updated position.
+    m_Position.SetFrameTime(frameTime);
+
+    // Handle the input.
+    keyDown = m_gameInputCommands.left;
+    m_Position.TurnLeft(keyDown);
+
+    keyDown = m_gameInputCommands.right;
+    m_Position.TurnRight(keyDown);
+
+    keyDown = m_gameInputCommands.forward;
+    m_Position.MoveForward(keyDown);
+
+    keyDown = m_gameInputCommands.back;
+    m_Position.MoveBackward(keyDown);
+
+    keyDown = m_gameInputCommands.up;
+    m_Position.MoveUpward(keyDown);
+
+    keyDown = m_gameInputCommands.down;
+    m_Position.MoveDownward(keyDown);
+
+    keyDown = m_gameInputCommands.rotUp;
+    m_Position.LookUpward(keyDown);
+
+    keyDown = m_gameInputCommands.rotDown;
+    m_Position.LookDownward(keyDown);
+
+    // Get the view point position/rotation.
+    m_Position.GetPosition(posX, posY, posZ);
+    m_Position.GetRotation(rotX, rotY, rotZ);
+
+    // Set the position of the camera.
+    m_Camera01.setPosition(Vector3(posX, posY, posZ));
+    m_Camera01.setRotation(Vector3(rotX, rotY, rotZ));
+    return true;
+}
 
 #pragma region Message Handlers
 // Message handlers
@@ -490,7 +469,7 @@ void Game::CreateDeviceDependentResources()
 	CreateDDSTextureFromFile(device, L"waternormal.dds", nullptr,	m_waterTexture.ReleaseAndGetAddressOf());
     CreateDDSTextureFromFile(device, L"normal.dds", nullptr, m_normalTexture.ReleaseAndGetAddressOf());
 	//Initialise Render to texture
-	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
+	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same.
     m_RefractionTexture = new RenderTexture(device, 1920, 1080, 1, 2);
     m_ReflectionTexture = new RenderTexture(device, 1920, 1080, 1, 2);
 }
@@ -510,12 +489,13 @@ void Game::CreateWindowSizeDependentResources()
     }
 
     // This sample makes use of a right-handed coordinate system using row-major matrices.
-    m_projection = Matrix::CreatePerspectiveFieldOfView(
-        fovAngleY,
-        aspectRatio,
-        0.01f,
-        100.0f
-    );
+    //m_projection = Matrix::CreatePerspectiveFieldOfView(
+    //    fovAngleY,
+    //    aspectRatio,
+    //    0.01f,
+    //    100.0f
+    //);
+    m_projection = DirectX::XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, 0.01f, 100.0f);
 }
 
 void Game::SetupGUI()
@@ -646,7 +626,7 @@ void Game::RenderReflectionToTexture()
 
     // Render the sky plane using the sky plane shader.
     m_SkyplaneShader.EnableShader(context);
-    m_SkyplaneShader.SetShaderParameters(context, &worldMatrix, &reflectionViewMatrix, &m_projection, m_Skyplane.GetCloudTexture(), 
+    m_SkyplaneShader.SetShaderParameters(context, &worldMatrix, &reflectionViewMatrix, &m_projection, m_Skyplane.GetCloudTexture(),
         m_Skyplane.GetPerturbTexture(), m_Skyplane.GetTranslation(), m_Skyplane.GetScale(), m_Skyplane.GetBrightness());
 
         m_Skyplane.Render(context);

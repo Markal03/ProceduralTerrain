@@ -45,20 +45,20 @@ void Input::Update()
 		m_quitApp = true;
 	}
 
-	//A key
+	//arrow left
 	if (kb.Left)	m_GameInput.rotLeft = true;
 	else		m_GameInput.rotLeft = false;
 
-	//D key
+	//arrow right
 	if (kb.Right)	m_GameInput.rotRight = true;
 	else		m_GameInput.rotRight = false;
 
-	//W key
-	if (kb.Up)	m_GameInput.rotUp = true;
+	//page up key
+	if (kb.PageUp)	m_GameInput.rotUp = true;
 	else		m_GameInput.rotUp = false;
 
-	//S key
-	if (kb.Down)	m_GameInput.rotDown = true;
+	//page down
+	if (kb.PageDown)	m_GameInput.rotDown = true;
 	else			m_GameInput.rotDown = false;
 
 	//Down arrow key

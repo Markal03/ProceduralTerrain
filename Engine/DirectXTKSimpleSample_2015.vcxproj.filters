@@ -93,6 +93,7 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Position.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -163,6 +164,7 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Position.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

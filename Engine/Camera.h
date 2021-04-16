@@ -26,10 +26,9 @@ private:
 	Vector3							m_forward;
 	Vector3							m_right;
 	Vector3							m_up;
-	Vector3							m_orientation;			//vector storing pitch yaw and roll. 
+	Vector3							m_orientation;			//vector storing pitch yaw and roll.
 
-	float							m_movespeed;	
+	float							m_movespeed;
 	float							m_camRotRate;
 
 };
-
